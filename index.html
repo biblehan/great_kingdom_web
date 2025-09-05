@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>그레이트 킹덤 - 이세돌의 위즈스톤</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-header h1 {
+            font-size: 2.2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
+        }
+
+        .game-header .subtitle {
+            font-size: 1.1em;
+            color: #ecf0f1;
+            opacity: 0.8;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .player-info, .computer-info {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .player-info {
+            border-left: 4px solid #3498db;
+        }
+
+        .computer-info {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-gap: 1px;
+            background: #2c3e50;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 500px;
+            aspect-ratio: 1;
+        }
+
+        .intersection {
+            background: #34495e;
+            border: 1px solid #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .intersection:hover {
+            background: #3d566e;
+        }
+
+        .stone {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .stone.player {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stone.computer {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stone.neutral {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .captured {
+            animation: captureAnimation 0.5s ease-out forwards;
+        }
+
+        @keyframes captureAnimation {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .territory {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 2px dashed #ecf0f1;
+        }
+
+        .territory.player-territory {
+            background: rgba(52, 152, 219, 0.3) !important;
+            border: 2px dashed #3498db;
+        }
+
+        .territory.computer-territory {
+            background: rgba(231, 76, 60, 0.3) !important;
+            border: 2px dashed #e74c3c;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-status {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+
+        .game-log {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .game-log h3 {
+            margin-bottom: 10px;
+            color: #f39c12;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+            font-size: 0.9em;
+        }
+
+        .game-over-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🏰 그레이트 킹덤</h1>
+            <div class="subtitle">이세돌의 위즈스톤</div>
+        </div>
+
+        <div class="game-info">
+            <div class="player-info">
+                <h3>🔵 당신 (파란색)</h3>
+                <div class="score-display">
+                    <div class="score-item">
+                        <div>영토</div>
+                        <div class="score-value" id="playerTerritory">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div>돌 수</div>
+                        <div class="score-value" id="playerStones">40</div>
+                    </div>
+                </div>
+            </div>
+            <div class="computer-info">
+                <h3>🟠 컴퓨터 (주황색)</h3>
+                <div class="score-display">
+                    <div class="score-item">
+                        <div>영토</div>
+                        <div class="score-value" id="computerTerritory">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div>돌 수</div>
+                        <div class="score-value" id="computerStones">40</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-status" id="gameStatus">당신의 차례입니다 (파란색 돌)</div>
+
+        <div class="game-board" id="gameBoard"></div>
+
+        <div class="controls">
+            <button class="btn" id="passBtn">패스</button>
+            <button class="btn" id="calculateBtn">점수 계산</button>
+            <button class="btn" id="resetBtn">새 게임</button>
+        </div>
+
+        <div class="game-log">
+            <h3>📋 게임 로그</h3>
+            <div id="gameLogContent"></div>
+        </div>
+    </div>
+
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2 id="gameOverTitle"></h2>
+            <p id="gameOverMessage"></p>
+            <button class="btn" onclick="resetGame()">다시 시작</button>
+        </div>
+    </div>
+
+    <script>
+        class GreatKingdomGame {
+            constructor() {
+                this.board = Array(81).fill(null); // 9x9 보드
+                this.currentPlayer = 'player'; // player는 파란색(후공), computer는 주황색(선공)
+                this.playerStones = 40;
+                this.computerStones = 40;
+                this.consecutivePasses = 0;
+                this.gameEnded = false;
+                this.gameLog = [];
+                
+                this.initializeGame();
+            }
+
+            initializeGame() {
+                this.createBoard();
+                this.placeNeutralStone();
+                this.updateDisplay();
+                this.addEventListeners();
+                this.logMessage("게임이 시작되었습니다!");
+                this.logMessage("중앙에 중립 돌이 배치되었습니다.");
+                this.logMessage("컴퓨터가 선공(주황색)입니다.");
+                
+                // 컴퓨터가 선공이므로 컴퓨터 턴으로 시작
+                this.currentPlayer = 'computer';
+                setTimeout(() => this.computerMove(), 1000);
+            }
+
+            createBoard() {
+                const boardElement = document.getElementById('gameBoard');
+                boardElement.innerHTML = '';
+
+                for (let i = 0; i < 81; i++) {
+                    const intersection = document.createElement('div');
+                    intersection.className = 'intersection';
+                    intersection.dataset.index = i;
+                    boardElement.appendChild(intersection);
+                }
+            }
+
+            placeNeutralStone() {
+                // 중앙(4,4 = 인덱스 40)에 중립 돌 배치
+                this.board[40] = 'neutral';
+            }
+
+            addEventListeners() {
+                // 터치 이벤트 지원 추가
+                document.getElementById('gameBoard').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('intersection') && this.currentPlayer === 'player' && !this.gameEnded) {
+                        const index = parseInt(e.target.dataset.index);
+                        this.makeMove(index, 'player');
+                    }
+                });
+
+                // 터치 이벤트로도 동작하도록
+                document.getElementById('gameBoard').addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    if (e.target.classList.contains('intersection') && this.currentPlayer === 'player' && !this.gameEnded) {
+                        const index = parseInt(e.target.dataset.index);
+                        this.makeMove(index, 'player');
+                    }
+                });
+
+                document.getElementById('passBtn').addEventListener('click', () => {
+                    if (this.currentPlayer === 'player' && !this.gameEnded) {
+                        this.pass();
+                    }
+                });
+
+                document.getElementById('calculateBtn').addEventListener('click', () => {
+                    this.calculateScore(true);
+                });
+
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    this.resetGame();
+                });
+            }
+
+            makeMove(index, player) {
+                if (this.board[index] !== null) {
+                    return false; // 이미 돌이 있음
+                }
+
+                // 상대방 완성된 영토에는 둘 수 없음 규칙 체크
+                if (this.isInOpponentTerritory(index, player)) {
+                    this.logMessage("상대방의 영토에는 돌을 둘 수 없습니다!");
+                    return false;
+                }
+
+                this.board[index] = player;
+                this.consecutivePasses = 0;
+
+                if (player === 'player') {
+                    this.playerStones--;
+                } else {
+                    this.computerStones--;
+                }
+
+                this.logMessage(`${player === 'player' ? '당신이' : '컴퓨터가'} ${this.indexToCoord(index)}에 돌을 놓았습니다.`);
+
+                // 상대방 돌 포획 체크
+                this.checkCaptures(player);
+
+                this.updateDisplay();
+                this.switchPlayer();
+                return true;
+            }
+
+            isInOpponentTerritory(index, player) {
+                // 임시로 돌을 놓고 영역을 체크
+                const originalBoard = [...this.board];
+                this.board[index] = player;
+                
+                const territories = this.calculateTerritories();
+                const opponentPlayer = player === 'player' ? 'computer' : 'player';
+                
+                // 원래 보드 상태로 복원
+                this.board = originalBoard;
+                
+                // 상대방 영토에 포함되는지 체크
+                for (let territory of territories) {
+                    if (territory.owner === opponentPlayer && territory.points.includes(index)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            checkCaptures(player) {
+                const opponent = player === 'player' ? 'computer' : 'player';
+                let capturedCount = 0;
+
+                for (let i = 0; i < 81; i++) {
+                    if (this.board[i] === opponent) {
+                        const group = this.getGroup(i);
+                        if (this.isCaptured(group)) {
+                            // 그룹 포획
+                            group.forEach(index => {
+                                this.board[index] = null;
+                                capturedCount++;
+                                
+                                // 포획 애니메이션
+                                const element = document.querySelector(`[data-index="${index}"]`);
+                                const stone = element.querySelector('.stone');
+                                if (stone) {
+                                    stone.classList.add('captured');
+                                    setTimeout(() => {
+                                        element.innerHTML = '';
+                                    }, 500);
+                                }
+                            });
+                        }
+                    }
+                }
+
+                if (capturedCount > 0) {
+                    this.logMessage(`${capturedCount}개의 ${opponent === 'player' ? '파란색' : '주황색'} 돌을 포획했습니다!`);
+                    
+                    // 상대방 돌을 하나라도 포획하면 즉시 승리
+                    if (capturedCount > 0) {
+                        this.endGame(player, '포획 승리');
+                        return;
+                    }
+                }
+            }
+
+            getGroup(startIndex) {
+                if (this.board[startIndex] === null) return [];
+                
+                const color = this.board[startIndex];
+                const group = [];
+                const visited = new Set();
+                const stack = [startIndex];
+
+                while (stack.length > 0) {
+                    const index = stack.pop();
+                    if (visited.has(index)) continue;
+                    
+                    visited.add(index);
+                    if (this.board[index] === color) {
+                        group.push(index);
+                        
+                        // 인접한 위치 체크
+                        const neighbors = this.getNeighbors(index);
+                        neighbors.forEach(neighbor => {
+                            if (!visited.has(neighbor) && this.board[neighbor] === color) {
+                                stack.push(neighbor);
+                            }
+                        });
+                    }
+                }
+
+                return group;
+            }
+
+            isCaptured(group) {
+                // 그룹이 완전히 둘러싸여 있는지 체크
+                for (let index of group) {
+                    const neighbors = this.getNeighbors(index);
+                    for (let neighbor of neighbors) {
+                        if (this.board[neighbor] === null) {
+                            return false; // 빈 공간이 있으면 포획되지 않음
+                        }
+                    }
+                }
+                return true;
+            }
+
+            getNeighbors(index) {
+                const neighbors = [];
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+
+                // 상하좌우만 체크 (대각선 제외)
+                const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                
+                directions.forEach(([dr, dc]) => {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    
+                    if (newRow >= 0 && newRow < 9 && newCol >= 0 && newCol < 9) {
+                        neighbors.push(newRow * 9 + newCol);
+                    }
+                });
+
+                return neighbors;
+            }
+
+            computerMove() {
+                if (this.gameEnded) return;
+
+                // 간단한 AI: 랜덤하게 유효한 위치 선택
+                const validMoves = [];
+                for (let i = 0; i < 81; i++) {
+                    if (this.board[i] === null && !this.isInOpponentTerritory(i, 'computer')) {
+                        validMoves.push(i);
+                    }
+                }
+
+                if (validMoves.length === 0) {
+                    this.pass();
+                    return;
+                }
+
+                const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                this.makeMove(randomMove, 'computer');
+            }
+
+            pass() {
+                this.consecutivePasses++;
+                this.logMessage(`${this.currentPlayer === 'player' ? '당신이' : '컴퓨터가'} 패스했습니다.`);
+                
+                if (this.consecutivePasses >= 2) {
+                    this.calculateScore(false);
+                    return;
+                }
+
+                this.switchPlayer();
+            }
+
+            switchPlayer() {
+                if (this.gameEnded) return;
+                
+                this.currentPlayer = this.currentPlayer === 'player' ? 'computer' : 'player';
+                this.updateDisplay();
+
+                if (this.currentPlayer === 'computer') {
+                    setTimeout(() => this.computerMove(), 1000);
+                }
+            }
+
+            calculateTerritories() {
+                const territories = [];
+                const visited = new Set();
+
+                for (let i = 0; i < 81; i++) {
+                    if (this.board[i] === null && !visited.has(i)) {
+                        const territory = this.floodFill(i, visited);
+                        if (territory.points.length > 0) {
+                            territories.push(territory);
+                        }
+                    }
+                }
+
+                return territories;
+            }
+
+            floodFill(startIndex, visited) {
+                const territory = {
+                    points: [],
+                    owner: null,
+                    surroundingColors: new Set()
+                };
+
+                const stack = [startIndex];
+                const territoryPoints = new Set();
+
+                while (stack.length > 0) {
+                    const index = stack.pop();
+                    if (visited.has(index) || territoryPoints.has(index)) continue;
+                    if (this.board[index] !== null) continue;
+
+                    territoryPoints.add(index);
+                    visited.add(index);
+                    territory.points.push(index);
+
+                    const neighbors = this.getNeighbors(index);
+                    neighbors.forEach(neighbor => {
+                        if (this.board[neighbor] === null && !territoryPoints.has(neighbor)) {
+                            stack.push(neighbor);
+                        } else if (this.board[neighbor] !== null) {
+                            territory.surroundingColors.add(this.board[neighbor]);
+                        }
+                    });
+
+                    // 가장자리도 체크
+                    const row = Math.floor(index / 9);
+                    const col = index % 9;
+                    if (row === 0 || row === 8 || col === 0 || col === 8) {
+                        territory.surroundingColors.add('edge');
+                    }
+                }
+
+                // 영토 소유권 결정
+                const colors = Array.from(territory.surroundingColors);
+                if (colors.length === 1 && colors[0] !== 'neutral') {
+                    territory.owner = colors[0] === 'edge' ? null : colors[0];
+                } else if (colors.length === 2 && colors.includes('edge')) {
+                    const nonEdgeColor = colors.find(c => c !== 'edge');
+                    if (nonEdgeColor !== 'neutral') {
+                        territory.owner = nonEdgeColor;
+                    }
+                }
+
+                return territory;
+            }
+
+            calculateScore(showModal = true) {
+                const territories = this.calculateTerritories();
+                let playerScore = 0;
+                let computerScore = 0;
+
+                territories.forEach(territory => {
+                    if (territory.owner === 'player') {
+                        playerScore += territory.points.length;
+                    } else if (territory.owner === 'computer') {
+                        computerScore += territory.points.length;
+                    }
+                });
+
+                this.updateTerritoryDisplay(territories);
+
+                // 선공이 3점 이상 앞서야 승리 (컴퓨터가 선공)
+                let winner;
+                if (computerScore - playerScore >= 3) {
+                    winner = 'computer';
+                } else {
+                    winner = 'player';
+                }
+
+                this.logMessage(`점수 계산: 당신 ${playerScore}점, 컴퓨터 ${computerScore}점`);
+
+                if (showModal) {
+                    this.endGame(winner, '점수');
+                }
+
+                return { playerScore, computerScore, winner };
+            }
+
+            updateTerritoryDisplay(territories) {
+                // 모든 영토 표시 초기화
+                document.querySelectorAll('.intersection').forEach(el => {
+                    el.classList.remove('territory', 'player-territory', 'computer-territory');
+                });
+
+                // 영토 표시
+                territories.forEach(territory => {
+                    territory.points.forEach(index => {
+                        const element = document.querySelector(`[data-index="${index}"]`);
+                        element.classList.add('territory');
+                        if (territory.owner === 'player') {
+                            element.classList.add('player-territory');
+                        } else if (territory.owner === 'computer') {
+                            element.classList.add('computer-territory');
+                        }
+                    });
+                });
+            }
+
+            endGame(winner, reason) {
+                this.gameEnded = true;
+                const { playerScore, computerScore } = this.calculateScore(false);
+                
+                let title, message;
+                if (reason === '포획 승리') {
+                    title = winner === 'player' ? '승리!' : '패배!';
+                    message = `${winner === 'player' ? '당신이' : '컴퓨터가'} 상대방 돌을 포획하여 승리했습니다!`;
+                } else {
+                    title = winner === 'player' ? '승리!' : '패배!';
+                    message = `최종 점수: 당신 ${playerScore}점, 컴퓨터 ${computerScore}점\n${winner === 'player' ? '당신이' : '컴퓨터가'} 승리했습니다!`;
+                }
+
+                document.getElementById('gameOverTitle').textContent = title;
+                document.getElementById('gameOverMessage').textContent = message;
+                document.getElementById('gameOverModal').style.display = 'flex';
+            }
+
+            updateDisplay() {
+                // 보드 업데이트
+                for (let i = 0; i < 81; i++) {
+                    const element = document.querySelector(`[data-index="${i}"]`);
+                    element.innerHTML = '';
+                    
+                    if (this.board[i] !== null) {
+                        const stone = document.createElement('div');
+                        stone.className = `stone ${this.board[i]}`;
+                        element.appendChild(stone);
+                    }
+                }
+
+                // 상태 정보 업데이트
+                document.getElementById('playerStones').textContent = this.playerStones;
+                document.getElementById('computerStones').textContent = this.computerStones;
+
+                const { playerScore, computerScore } = this.calculateScore(false);
+                document.getElementById('playerTerritory').textContent = playerScore;
+                document.getElementById('computerTerritory').textContent = computerScore;
+
+                // 게임 상태 표시
+                if (!this.gameEnded) {
+                    const statusText = this.currentPlayer === 'player' ? 
+                        '당신의 차례입니다 (파란색 돌)' : 
+                        '컴퓨터가 생각 중입니다 (주황색 돌)';
+                    document.getElementById('gameStatus').textContent = statusText;
+                }
+
+                // 버튼 상태
+                document.getElementById('passBtn').disabled = this.currentPlayer !== 'player' || this.gameEnded;
+            }
+
+            indexToCoord(index) {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                return `(${row + 1}, ${col + 1})`;
+            }
+
+            logMessage(message) {
+                this.gameLog.unshift(message);
+                if (this.gameLog.length > 10) {
+                    this.gameLog.pop();
+                }
+
+                const logContent = document.getElementById('gameLogContent');
+                logContent.innerHTML = this.gameLog.map(msg => 
+                    `<div class="log-entry">${msg}</div>`
+                ).join('');
+            }
+
+            resetGame() {
+                document.getElementById('gameOverModal').style.display = 'none';
+                this.board = Array(81).fill(null);
+                this.currentPlayer = 'computer'; // 컴퓨터가 선공
+                this.playerStones = 40;
+                this.computerStones = 40;
+                this.consecutivePasses = 0;
+                this.gameEnded = false;
+                this.gameLog = [];
+                
+                this.placeNeutralStone();
+                this.updateDisplay();
+                this.logMessage("새 게임이 시작되었습니다!");
+                this.logMessage("중앙에 중립 돌이 배치되었습니다.");
+                this.logMessage("컴퓨터가 선공(주황색)입니다.");
+                
+                // 영토 표시 초기화
+                document.querySelectorAll('.intersection').forEach(el => {
+                    el.classList.remove('territory', 'player-territory', 'computer-territory');
+                });
+                
+                setTimeout(() => this.computerMove(), 1000);
+            }
+        }
+
+        // 게임 초기화
+        let game = new GreatKingdomGame();
+
+        // 전역 함수
+        function resetGame() {
+            game.resetGame();
+        }
+    </script>
+</body>
+</html>
