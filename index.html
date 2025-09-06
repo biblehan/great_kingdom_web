@@ -631,11 +631,11 @@
 			// ==== 난이도별 수읽기/랜덤 파라미터 ====
 			difficultyParams(d) {
 				// depth: 탐색 깊이, topK: 각 턴에서 상위 후보만 탐색(속도↑), noise: 동점/유사점수 시 약간의 무작위
-				if (d <= 3) return { depth: 0, topK: 0, noise: 0.30, playstyle: "random" };
-				if (d <= 6) return { depth: 0, topK: 0, noise: 0.10, playstyle: "heuristic" };
-				if (d <= 8) return { depth: 1, topK: 10, noise: 0.05, playstyle: "lookahead" };
-				if (d === 9) return { depth: 2, topK: 8, noise: 0.02, playstyle: "minimax" };
-				return { depth: 2, topK: 12, noise: 0.00, playstyle: "minimax" }; // 10
+				if (d <= 3) return { depth: 1, topK: 0, noise: 0.10, playstyle: "random" };
+				if (d <= 6) return { depth: 2, topK: 0, noise: 0.05, playstyle: "heuristic" };
+				if (d <= 8) return { depth: 3, topK: 10, noise: 0.02, playstyle: "lookahead" };
+				if (d === 9) return { depth: 5, topK: 8, noise: 0.01, playstyle: "minimax" };
+				return { depth: 10, topK: 12, noise: 0.00, playstyle: "minimax" }; // 10
 			}
 
             
