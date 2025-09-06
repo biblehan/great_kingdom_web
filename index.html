@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
@@ -38,7 +39,7 @@
 
         .game-header h1 {
             font-size: 2em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             margin-bottom: 5px;
         }
 
@@ -50,11 +51,11 @@
 
         /* 난이도 선택 화면 */
         .difficulty-screen {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             padding: 30px 20px;
             border-radius: 15px;
             text-align: center;
-            border: 2px solid rgba(255,255,255,0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             margin-bottom: 20px;
         }
 
@@ -75,9 +76,9 @@
         }
 
         .difficulty-btn {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             padding: 15px 10px;
             border-radius: 10px;
             cursor: pointer;
@@ -91,7 +92,7 @@
         }
 
         .difficulty-btn:hover {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.3);
             transform: scale(1.05);
         }
 
@@ -138,8 +139,9 @@
             gap: 10px;
         }
 
-        .player-info, .computer-info {
-            background: rgba(255,255,255,0.1);
+        .player-info,
+        .computer-info {
+            background: rgba(255, 255, 255, 0.1);
             padding: 10px;
             border-radius: 8px;
             flex: 1;
@@ -171,7 +173,7 @@
             font-size: 1em;
             margin: 10px 0;
             padding: 8px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 5px;
         }
 
@@ -232,19 +234,19 @@
         .stone.player {
             background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .stone.computer {
             background: linear-gradient(135deg, #e67e22, #d35400);
             color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .stone.neutral {
             background: linear-gradient(135deg, #95a5a6, #7f8c8d);
             color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .controls {
@@ -273,12 +275,12 @@
 
         .btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
         }
 
         .btn:active {
             transform: translateY(0);
-            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
         }
 
         .btn:disabled {
@@ -290,7 +292,7 @@
         /* 게임 종료 결과 화면 */
         .game-result {
             display: none;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             border-radius: 15px;
             margin-top: 20px;
@@ -371,12 +373,12 @@
             .game-header h1 {
                 font-size: 1.7em;
             }
-            
+
             .difficulty-grid {
                 max-width: 280px;
                 gap: 8px;
             }
-            
+
             .difficulty-btn {
                 padding: 12px 8px;
                 font-size: 16px;
@@ -386,8 +388,73 @@
                 max-width: 250px;
             }
         }
+
+        /* 복기 모달 */
+        .review-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .review-modal-content {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            padding: 20px;
+            width: 90vw;
+            height: 90vh;
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            margin: 20px;
+            color: white;
+        }
+
+        .review-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-gap: 1px;
+            background: #2c3e50;
+            padding: 5px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 350px;
+            aspect-ratio: 1;
+        }
+
+        .review-board .intersection {
+            background: #34495e;
+            min-height: 25px;
+            cursor: default;
+        }
+
+        .review-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .review-btn {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
     <div class="game-container">
         <div class="game-header">
@@ -448,7 +515,6 @@
             <div class="game-result" id="gameResult">
                 <div class="result-title" id="resultTitle">게임 종료</div>
                 <div class="result-message" id="resultMessage"></div>
-                <div class="final-board" id="finalBoard"></div>
                 <div class="result-controls">
                     <button class="result-btn" id="newGameFromResult">새 게임</button>
                     <button class="result-btn" id="reviewGame">복기하기</button>
@@ -457,54 +523,66 @@
         </div>
     </div>
 
+    <!-- 복기 모달 -->
+    <div class="review-modal" id="reviewModal">
+        <div class="review-modal-content">
+            <h3 id="reviewTitle">복기</h3>
+            <div id="reviewStatus">복기를 시작합니다...</div>
+            <div class="review-board" id="reviewBoard"></div>
+            <div class="review-controls">
+                <button class="review-btn" id="closeReview">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let selectedDifficulty = 5;
         let gameInstance = null;
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializeDifficultySelector();
         });
 
         function initializeDifficultySelector() {
             const difficultyButtons = document.querySelectorAll('.difficulty-btn');
             difficultyButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     document.querySelectorAll('.difficulty-btn').forEach(b => {
                         b.classList.remove('selected');
                     });
-                    
+
                     this.classList.add('selected');
                     selectedDifficulty = parseInt(this.dataset.level);
                     updateDifficultyDescription();
                 });
             });
 
-            document.getElementById('startGame').addEventListener('click', function() {
+            document.getElementById('startGame').addEventListener('click', function () {
                 startNewGame();
             });
 
-            document.getElementById('passBtn').addEventListener('click', function() {
+            document.getElementById('passBtn').addEventListener('click', function () {
                 if (gameInstance && gameInstance.currentPlayer === 'player' && !gameInstance.gameEnded) {
                     gameInstance.pass();
                 }
             });
 
-            document.getElementById('newGameBtn').addEventListener('click', function() {
+            document.getElementById('newGameBtn').addEventListener('click', function () {
                 backToMenu();
             });
 
-            document.getElementById('newGameFromResult').addEventListener('click', function() {
+            document.getElementById('newGameFromResult').addEventListener('click', function () {
                 backToMenu();
             });
 
-            document.getElementById('reviewGame').addEventListener('click', function() {
+            document.getElementById('reviewGame').addEventListener('click', function () {
                 if (gameInstance) {
                     gameInstance.startReview();
                 }
             });
 
-            document.getElementById('gameBoard').addEventListener('click', function(e) {
-                if (e.target.classList.contains('intersection') && gameInstance && 
+            document.getElementById('gameBoard').addEventListener('click', function (e) {
+                if (e.target.classList.contains('intersection') && gameInstance &&
                     gameInstance.currentPlayer === 'player' && !gameInstance.gameEnded) {
                     const index = parseInt(e.target.dataset.index);
                     gameInstance.makeMove(index, 'player');
@@ -512,12 +590,19 @@
             });
 
             updateDifficultyDescription();
+
+            document.getElementById('closeReview').addEventListener('click', function () {
+                document.getElementById('reviewModal').style.display = 'none';
+                if (gameInstance) {
+                    gameInstance.reviewMode = false;
+                }
+            });
         }
 
         function updateDifficultyDescription() {
             const descriptions = {
                 1: "초보자 - AI가 거의 랜덤하게 움직입니다",
-                2: "쉬움 - 기본적인 패턴만 사용합니다", 
+                2: "쉬움 - 기본적인 패턴만 사용합니다",
                 3: "약간 쉬움 - 간단한 전략을 사용합니다",
                 4: "쉬운 편 - 공격과 방어를 조금 생각합니다",
                 5: "중간 난이도 - 적당한 도전",
@@ -527,14 +612,14 @@
                 9: "매우 어려움 - 여러 수를 미리 계산합니다",
                 10: "극한 난이도 - 프로 수준의 AI"
             };
-            
+
             document.getElementById('difficultyInfo').textContent = descriptions[selectedDifficulty];
         }
 
         function startNewGame() {
             document.getElementById('difficultyScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'block';
-            
+
             gameInstance = new GreatKingdomGame(selectedDifficulty);
         }
 
@@ -557,7 +642,7 @@
                 this.lastMove = null;
                 this.reviewMode = false;
                 this.reviewStep = 0;
-                
+
                 this.initializeGame();
             }
 
@@ -565,10 +650,10 @@
                 this.createBoard();
                 this.placeNeutralStone();
                 this.updateDisplay();
-                
+
                 document.getElementById('gameStatus').textContent = `난이도 ${this.difficulty} - 컴퓨터가 먼저 시작합니다...`;
                 document.getElementById('gameResult').classList.remove('show');
-                
+
                 setTimeout(() => this.computerMove(), 1500);
             }
 
@@ -612,11 +697,11 @@
 
                 this.checkCaptures(player);
                 this.updateDisplay();
-                
+
                 if (!this.gameEnded) {
                     this.switchPlayer();
                 }
-                
+
                 return true;
             }
 
@@ -643,7 +728,7 @@
 
             getGroup(startIndex) {
                 if (this.board[startIndex] === null) return [];
-                
+
                 const color = this.board[startIndex];
                 const group = [];
                 const visited = new Set();
@@ -652,11 +737,11 @@
                 while (stack.length > 0) {
                     const index = stack.pop();
                     if (visited.has(index)) continue;
-                    
+
                     visited.add(index);
                     if (this.board[index] === color) {
                         group.push(index);
-                        
+
                         const neighbors = this.getNeighbors(index);
                         neighbors.forEach(neighbor => {
                             if (!visited.has(neighbor) && this.board[neighbor] === color) {
@@ -687,11 +772,11 @@
                 const col = index % 9;
 
                 const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-                
+
                 directions.forEach(([dr, dc]) => {
                     const newRow = row + dr;
                     const newCol = col + dc;
-                    
+
                     if (newRow >= 0 && newRow < 9 && newCol >= 0 && newCol < 9) {
                         neighbors.push(newRow * 9 + newCol);
                     }
@@ -713,7 +798,7 @@
                 for (let move of candidates) {
                     const tempBoard = [...this.board];
                     tempBoard[move] = 'computer';
-                    
+
                     // 상대방 돌 포획 체크
                     for (let i = 0; i < 81; i++) {
                         if (tempBoard[i] === 'player') {
@@ -736,19 +821,19 @@
                     } else {
                         const centers = this.getCenterMoves(candidates);
                         chosenMove = centers.length ? centers[Math.floor(Math.random() * centers.length)]
-                                                    : candidates[Math.floor(Math.random() * candidates.length)];
+                            : candidates[Math.floor(Math.random() * candidates.length)];
                     }
                 } else {
                     // 고급 난이도: 최선의 수들 중에서 랜덤 선택
                     const scoredMoves = this.evaluateAllMoves(candidates);
-                    
+
                     // 최고 점수와 비슷한 수들 찾기
                     const bestScore = scoredMoves[0].score;
                     const threshold = this.difficulty >= 8 ? 0.5 : 1.0;
-                    const similarMoves = scoredMoves.filter(m => 
+                    const similarMoves = scoredMoves.filter(m =>
                         Math.abs(m.score - bestScore) <= threshold
                     );
-                    
+
                     // 유사한 점수의 수들 중에서 랜덤 선택
                     if (similarMoves.length > 1) {
                         chosenMove = similarMoves[Math.floor(Math.random() * similarMoves.length)].move;
@@ -763,13 +848,13 @@
             evaluateAllMoves(candidates) {
                 const scored = candidates.map(mv => {
                     let score = this.evaluateMove(mv, 'computer');
-                    
+
                     // 랜덤 노이즈 추가 (동점 상황 방지)
                     score += (Math.random() - 0.5) * 0.2;
-                    
+
                     return { move: mv, score: score };
                 });
-                
+
                 return scored.sort((a, b) => b.score - a.score);
             }
 
@@ -795,26 +880,26 @@
                 let score = 0;
                 const row = Math.floor(move / 9);
                 const col = move % 9;
-                
+
                 // 중심부 선호
                 const centerDistance = Math.abs(row - 4) + Math.abs(col - 4);
                 score += (8 - centerDistance) * 0.5;
-                
+
                 // 자신의 돌과 연결성
                 const neighbors = this.getNeighbors(move);
                 const friendlyNeighbors = neighbors.filter(n => this.board[n] === player).length;
                 score += friendlyNeighbors * 3;
-                
+
                 // 상대방 돌 근처 (공격 기회)
                 const enemyNeighbors = neighbors.filter(n => this.board[n] === (player === 'player' ? 'computer' : 'player')).length;
                 score += enemyNeighbors * 2;
-                
+
                 return score;
             }
 
             getGroupFromBoard(board, startIndex) {
                 if (board[startIndex] === null) return [];
-                
+
                 const color = board[startIndex];
                 const group = [];
                 const visited = new Set();
@@ -823,11 +908,11 @@
                 while (stack.length > 0) {
                     const index = stack.pop();
                     if (visited.has(index)) continue;
-                    
+
                     visited.add(index);
                     if (board[index] === color) {
                         group.push(index);
-                        
+
                         const neighbors = this.getNeighbors(index);
                         neighbors.forEach(neighbor => {
                             if (!visited.has(neighbor) && board[neighbor] === color) {
@@ -854,7 +939,7 @@
 
             pass() {
                 this.consecutivePasses++;
-                
+
                 if (this.consecutivePasses >= 2) {
                     this.calculateScore(true);
                     return;
@@ -865,7 +950,7 @@
 
             switchPlayer() {
                 if (this.gameEnded || this.reviewMode) return;
-                
+
                 this.currentPlayer = this.currentPlayer === 'player' ? 'computer' : 'player';
                 this.updateDisplay();
 
@@ -875,170 +960,202 @@
             }
 
             calculateScore(showResult = true) {
-			    let playerScore = 0;
-			    let computerScore = 0;
-			
-			    for (let i = 0; i < 81; i++) {
-			        if (this.board[i] === 'player') {
-			            playerScore++;
-			        } else if (this.board[i] === 'computer') {
-			            computerScore++;
-			        }
-			    }
-			
-			    let winner;
-			    if (computerScore - playerScore >= 3) {
-			        winner = 'computer';
-			    } else {
-			        winner = 'player';
-			    }
-			
-			    if (showResult) {
-			        this.endGame(winner, '점수');
-			    }
-			
-			    return { playerScore, computerScore, winner };
-			}
-	
-			endGame(winner, reason) {
-			    this.gameEnded = true;
-			    const { playerScore, computerScore } = this.calculateScore(false);
-			    
-			    let title = winner === 'player' ? '승리!' : '패배!';
-			    let message = `최종 점수: 당신 ${playerScore}점, 컴퓨터 ${computerScore}점`;
-			    
-			    if (reason === '포획 승리') {
-			        message = `${winner === 'player' ? '당신이' : '컴퓨터가'} 상대방 돌을 포획하여 승리했습니다!`;
-			    }
-			
-			    this.showGameResult(title, message, winner);
-			}
-			
-			showGameResult(title, message, winner) {
-			    const resultElement = document.getElementById('gameResult');
-			    const titleElement = document.getElementById('resultTitle');
-			    const messageElement = document.getElementById('resultMessage');
-			    
-			    titleElement.textContent = title;
-			    titleElement.className = `result-title ${winner === 'player' ? 'win' : 'lose'}`;
-			    messageElement.textContent = message;
-			    
-			    this.createFinalBoard();
-			    resultElement.classList.add('show');
-			}
-			
-			createFinalBoard() {
-			    const finalBoard = document.getElementById('finalBoard');
-			    finalBoard.innerHTML = '';
-			
-			    for (let i = 0; i < 81; i++) {
-			        const intersection = document.createElement('div');
-			        intersection.className = 'intersection';
-			        
-			        if (this.board[i] !== null) {
-			            const stone = document.createElement('div');
-			            stone.className = `stone ${this.board[i]}`;
-			            intersection.appendChild(stone);
-			        }
-			        
-			        if (i === this.lastMove) {
-			            intersection.classList.add('last-move');
-			        }
-			        
-			        finalBoard.appendChild(intersection);
-			    }
-			}
-			
-			startReview() {
-			    this.reviewMode = true;
-			    this.reviewStep = 0;
-			    document.getElementById('gameResult').classList.remove('show');
-			    document.getElementById('gameStatus').textContent = '복기 모드 - 클릭하여 다음 수를 확인하세요';
-			    
-			    // 초기 상태로 보드 리셋
-			    this.board = Array(81).fill(null);
-			    this.lastMove = null;
-			    this.updateDisplay();
-			    this.showReviewStep();
-			}
-			
-			showReviewStep() {
-			    if (this.reviewStep < this.gameHistory.length) {
-			        const step = this.gameHistory[this.reviewStep];
-			        this.board = [...step.board];
-			        this.lastMove = step.move;
-			        this.updateDisplay();
-			        
-			        const playerName = step.player === 'player' ? '당신' : 
-			                         step.player === 'computer' ? '컴퓨터' : '중립';
-			        document.getElementById('gameStatus').textContent = 
-			            `${this.reviewStep + 1}/${this.gameHistory.length}: ${playerName}이 ${this.indexToCoord(step.move)}에 착수`;
-			        
-			        this.reviewStep++;
-			        
-			        // 자동으로 다음 수 보여주기
-			        setTimeout(() => {
-			            if (this.reviewMode && this.reviewStep < this.gameHistory.length) {
-			                this.showReviewStep();
-			            } else if (this.reviewMode) {
-			                document.getElementById('gameStatus').textContent = '복기 완료 - 새 게임을 시작하세요';
-			                this.reviewMode = false;
-			            }
-			        }, 1500);
-			    }
-			}
-		
-			indexToCoord(index) {
-			    const row = Math.floor(index / 9);
-			    const col = index % 9;
-			    const letters = 'ABCDEFGHI';
-			    return letters[col] + (row + 1);
-			}
-			
-			updateDisplay() {
-			    // 보드 업데이트
-			    for (let i = 0; i < 81; i++) {
-			        const element = document.querySelector(`[data-index="${i}"]`);
-			        if (element) {
-			            element.innerHTML = '';
-			            element.classList.remove('last-move');
-			            
-			            if (this.board[i] !== null) {
-			                const stone = document.createElement('div');
-			                stone.className = `stone ${this.board[i]}`;
-			                element.appendChild(stone);
-			            }
-			            
-			            // 마지막 착수 하이라이트
-			            if (i === this.lastMove && !this.reviewMode) {
-			                element.classList.add('last-move');
-			            }
-			        }
-			    }
-			
-			    // 정보 업데이트
-			    document.getElementById('playerStones').textContent = this.playerStones;
-			    document.getElementById('computerStones').textContent = this.computerStones;
-			
-			    const { playerScore, computerScore } = this.calculateScore(false);
-			    document.getElementById('playerTerritory').textContent = playerScore;
-			    document.getElementById('computerTerritory').textContent = computerScore;
-			
-			    // 상태 표시
-			    if (!this.gameEnded && !this.reviewMode) {
-			        const statusText = this.currentPlayer === 'player' ? 
-			            '당신의 차례입니다 (파란색 돌)' : 
-			            '컴퓨터가 생각 중입니다...';
-			        document.getElementById('gameStatus').textContent = statusText;
-			    }
-			
-			    // 버튼 상태
-			    const passBtn = document.getElementById('passBtn');
-			    if (passBtn) {
-			        passBtn.disabled = this.currentPlayer !== 'player' || this.gameEnded || this.reviewMode;
-			    }
-			}
-		}
+                let playerScore = 0;
+                let computerScore = 0;
+
+                for (let i = 0; i < 81; i++) {
+                    if (this.board[i] === 'player') {
+                        playerScore++;
+                    } else if (this.board[i] === 'computer') {
+                        computerScore++;
+                    }
+                }
+
+                let winner;
+                if (computerScore - playerScore >= 3) {
+                    winner = 'computer';
+                } else {
+                    winner = 'player';
+                }
+
+                if (showResult) {
+                    this.endGame(winner, '점수');
+                }
+
+                return { playerScore, computerScore, winner };
+            }
+
+            endGame(winner, reason) {
+                this.gameEnded = true;
+                const { playerScore, computerScore } = this.calculateScore(false);
+
+                let title = winner === 'player' ? '🎉 승리!' : '💀 패배...';
+                let message = '';
+
+                if (reason === '포획 승리') {
+                    message = winner === 'player'
+                        ? '상대의 돌을 포획하여 승리했습니다!'
+                        : '당신의 돌이 포획되어 패배했습니다.';
+                } else {
+                    message = `최종 점수 - 당신: ${playerScore}, 컴퓨터: ${computerScore}`;
+                }
+
+                const resultTitle = document.getElementById('resultTitle');
+                resultTitle.textContent = title;
+                resultTitle.className = 'result-title ' + (winner === 'player' ? 'win' : 'lose');
+
+                document.getElementById('resultMessage').textContent = message;
+                document.getElementById('gameResult').classList.add('show');
+                document.getElementById('gameStatus').textContent = '게임이 종료되었습니다.';
+            }
+
+
+            showGameResult(title, message, winner) {
+                const resultElement = document.getElementById('gameResult');
+                const titleElement = document.getElementById('resultTitle');
+                const messageElement = document.getElementById('resultMessage');
+
+                titleElement.textContent = title;
+                titleElement.className = `result-title ${winner === 'player' ? 'win' : 'lose'}`;
+                messageElement.textContent = message;
+
+                this.createFinalBoard();
+                resultElement.classList.add('show');
+            }
+
+            createFinalBoard() {
+                const finalBoard = document.getElementById('finalBoard');
+                finalBoard.innerHTML = '';
+
+                for (let i = 0; i < 81; i++) {
+                    const intersection = document.createElement('div');
+                    intersection.className = 'intersection';
+
+                    if (this.board[i] !== null) {
+                        const stone = document.createElement('div');
+                        stone.className = `stone ${this.board[i]}`;
+                        intersection.appendChild(stone);
+                    }
+
+                    if (i === this.lastMove) {
+                        intersection.classList.add('last-move');
+                    }
+
+                    finalBoard.appendChild(intersection);
+                }
+            }
+
+            startReview() {
+                this.reviewMode = true;
+                this.reviewStep = 0;
+
+                document.getElementById('reviewModal').style.display = 'flex';
+                document.getElementById('reviewTitle').textContent = '복기';
+
+                // 복기용 보드 생성
+                const reviewBoard = document.getElementById('reviewBoard');
+                reviewBoard.innerHTML = '';
+                for (let i = 0; i < 81; i++) {
+                    const intersection = document.createElement('div');
+                    intersection.className = 'intersection';
+                    reviewBoard.appendChild(intersection);
+                }
+
+                this.showReviewStep();
+            }
+
+            showReviewStep() {
+                if (this.reviewStep < this.gameHistory.length) {
+                    const step = this.gameHistory[this.reviewStep];
+
+                    // 복기 보드 업데이트
+                    const reviewBoard = document.getElementById('reviewBoard');
+                    const cells = reviewBoard.children;
+
+                    for (let i = 0; i < 81; i++) {
+                        cells[i].innerHTML = '';
+                        cells[i].classList.remove('last-move');
+
+                        if (step.board[i] !== null) {
+                            const stone = document.createElement('div');
+                            stone.className = `stone ${step.board[i]}`;
+                            cells[i].appendChild(stone);
+                        }
+
+                        if (i === step.move) {
+                            cells[i].classList.add('last-move');
+                        }
+                    }
+
+                    const playerName = step.player === 'player' ? '당신' :
+                        step.player === 'computer' ? '컴퓨터' : '중립';
+                    document.getElementById('reviewStatus').textContent =
+                        `${this.reviewStep + 1}/${this.gameHistory.length}: ${playerName}이 ${this.indexToCoord(step.move)}에 착수`;
+
+                    this.reviewStep++;
+
+                    setTimeout(() => {
+                        if (this.reviewMode && this.reviewStep < this.gameHistory.length) {
+                            this.showReviewStep();
+                        } else if (this.reviewMode) {
+                            document.getElementById('reviewStatus').textContent = '복기 완료';
+                        }
+                    }, 1500);
+                }
+            }
+
+            indexToCoord(index) {
+                const row = Math.floor(index / 9);
+                const col = index % 9;
+                const letters = 'ABCDEFGHI';
+                return letters[col] + (row + 1);
+            }
+
+            updateDisplay() {
+                // 보드 업데이트
+                for (let i = 0; i < 81; i++) {
+                    const element = document.querySelector(`[data-index="${i}"]`);
+                    if (element) {
+                        element.innerHTML = '';
+                        element.classList.remove('last-move');
+
+                        if (this.board[i] !== null) {
+                            const stone = document.createElement('div');
+                            stone.className = `stone ${this.board[i]}`;
+                            element.appendChild(stone);
+                        }
+
+                        // 마지막 착수 하이라이트
+                        if (i === this.lastMove && !this.reviewMode) {
+                            element.classList.add('last-move');
+                        }
+                    }
+                }
+
+                // 정보 업데이트
+                document.getElementById('playerStones').textContent = this.playerStones;
+                document.getElementById('computerStones').textContent = this.computerStones;
+
+                const { playerScore, computerScore } = this.calculateScore(false);
+                document.getElementById('playerTerritory').textContent = playerScore;
+                document.getElementById('computerTerritory').textContent = computerScore;
+
+                // 상태 표시
+                if (!this.gameEnded && !this.reviewMode) {
+                    const statusText = this.currentPlayer === 'player' ?
+                        '당신의 차례입니다 (파란색 돌)' :
+                        '컴퓨터가 생각 중입니다...';
+                    document.getElementById('gameStatus').textContent = statusText;
+                }
+
+                // 버튼 상태
+                const passBtn = document.getElementById('passBtn');
+                if (passBtn) {
+                    passBtn.disabled = this.currentPlayer !== 'player' || this.gameEnded || this.reviewMode;
+                }
+            }
+        }
     </script>
 </body>
+
 </html>
