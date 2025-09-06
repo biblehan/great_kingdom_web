@@ -210,6 +210,11 @@
             transform: scale(0.95);
         }
 
+        .intersection.last-move {
+            background: #f39c12 !important;
+            box-shadow: 0 0 10px rgba(243, 156, 18, 0.6);
+        }
+
         .stone {
             width: 85%;
             height: 85%;
@@ -282,27 +287,83 @@
             transform: none;
         }
 
-        /* 모달 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
+        /* 게임 종료 결과 화면 */
+        .game-result {
             display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
         }
 
-        .modal-content {
-            background: linear-gradient(135deg, #8e44ad, #9b59b6);
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 350px;
-            margin: 20px;
+        .game-result.show {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .result-title.win {
+            color: #27ae60;
+        }
+
+        .result-title.lose {
+            color: #e74c3c;
+        }
+
+        .result-message {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .final-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            grid-gap: 1px;
+            background: #2c3e50;
+            padding: 5px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 300px;
+            aspect-ratio: 1;
+        }
+
+        .final-board .intersection {
+            min-height: 20px;
+            cursor: default;
+        }
+
+        .final-board .stone {
+            font-size: 0.5em;
+        }
+
+        .result-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .result-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .result-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
         }
 
         /* 모바일 최적화 */
@@ -319,6 +380,10 @@
             .difficulty-btn {
                 padding: 12px 8px;
                 font-size: 16px;
+            }
+
+            .final-board {
+                max-width: 250px;
             }
         }
     </style>
@@ -376,18 +441,19 @@
 
             <div class="controls">
                 <button class="btn" id="passBtn">패스</button>
-                <button class="btn" id="calculateBtn">점수 계산</button>
                 <button class="btn" id="newGameBtn">새 게임</button>
             </div>
-        </div>
-    </div>
 
-    <!-- 게임 종료 모달 -->
-    <div class="modal" id="gameOverModal">
-        <div class="modal-content">
-            <h2 id="gameOverTitle"></h2>
-            <p id="gameOverMessage"></p>
-            <button class="btn" id="playAgainBtn">다시 하기</button>
+            <!-- 게임 결과 화면 -->
+            <div class="game-result" id="gameResult">
+                <div class="result-title" id="resultTitle">게임 종료</div>
+                <div class="result-message" id="resultMessage"></div>
+                <div class="final-board" id="finalBoard"></div>
+                <div class="result-controls">
+                    <button class="result-btn" id="newGameFromResult">새 게임</button>
+                    <button class="result-btn" id="reviewGame">복기하기</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -395,43 +461,31 @@
         let selectedDifficulty = 5;
         let gameInstance = null;
 
-        // 페이지 로드 시 이벤트 설정
         document.addEventListener('DOMContentLoaded', function() {
             initializeDifficultySelector();
         });
 
         function initializeDifficultySelector() {
-            // 난이도 버튼들
             const difficultyButtons = document.querySelectorAll('.difficulty-btn');
             difficultyButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // 이전 선택 해제
                     document.querySelectorAll('.difficulty-btn').forEach(b => {
                         b.classList.remove('selected');
                     });
                     
-                    // 새로운 선택
                     this.classList.add('selected');
                     selectedDifficulty = parseInt(this.dataset.level);
                     updateDifficultyDescription();
                 });
             });
 
-            // 게임 시작 버튼
             document.getElementById('startGame').addEventListener('click', function() {
                 startNewGame();
             });
 
-            // 게임 버튼들
             document.getElementById('passBtn').addEventListener('click', function() {
                 if (gameInstance && gameInstance.currentPlayer === 'player' && !gameInstance.gameEnded) {
                     gameInstance.pass();
-                }
-            });
-
-            document.getElementById('calculateBtn').addEventListener('click', function() {
-                if (gameInstance) {
-                    gameInstance.calculateScore(true);
                 }
             });
 
@@ -439,11 +493,16 @@
                 backToMenu();
             });
 
-            document.getElementById('playAgainBtn').addEventListener('click', function() {
+            document.getElementById('newGameFromResult').addEventListener('click', function() {
                 backToMenu();
             });
 
-            // 보드 클릭
+            document.getElementById('reviewGame').addEventListener('click', function() {
+                if (gameInstance) {
+                    gameInstance.startReview();
+                }
+            });
+
             document.getElementById('gameBoard').addEventListener('click', function(e) {
                 if (e.target.classList.contains('intersection') && gameInstance && 
                     gameInstance.currentPlayer === 'player' && !gameInstance.gameEnded) {
@@ -480,7 +539,6 @@
         }
 
         function backToMenu() {
-            document.getElementById('gameOverModal').style.display = 'none';
             document.getElementById('difficultyScreen').style.display = 'block';
             document.getElementById('gameScreen').style.display = 'none';
             gameInstance = null;
@@ -495,6 +553,10 @@
                 this.computerStones = 40;
                 this.consecutivePasses = 0;
                 this.gameEnded = false;
+                this.gameHistory = [];
+                this.lastMove = null;
+                this.reviewMode = false;
+                this.reviewStep = 0;
                 
                 this.initializeGame();
             }
@@ -505,6 +567,8 @@
                 this.updateDisplay();
                 
                 document.getElementById('gameStatus').textContent = `난이도 ${this.difficulty} - 컴퓨터가 먼저 시작합니다...`;
+                document.getElementById('gameResult').classList.remove('show');
+                
                 setTimeout(() => this.computerMove(), 1500);
             }
 
@@ -522,21 +586,29 @@
 
             placeNeutralStone() {
                 this.board[40] = 'neutral';
+                this.gameHistory.push({ move: 40, player: 'neutral', board: [...this.board] });
             }
 
             makeMove(index, player) {
-                if (this.board[index] !== null) {
+                if (this.board[index] !== null || this.reviewMode) {
                     return false;
                 }
 
                 this.board[index] = player;
                 this.consecutivePasses = 0;
+                this.lastMove = index;
 
                 if (player === 'player') {
                     this.playerStones--;
                 } else {
                     this.computerStones--;
                 }
+
+                this.gameHistory.push({
+                    move: index,
+                    player: player,
+                    board: [...this.board]
+                });
 
                 this.checkCaptures(player);
                 this.updateDisplay();
@@ -628,453 +700,94 @@
                 return neighbors;
             }
 
-			// ==== 난이도별 수읽기/랜덤 파라미터 ====
-			difficultyParams(d) {
-				// depth: 탐색 깊이, topK: 각 턴에서 상위 후보만 탐색(속도↑), noise: 동점/유사점수 시 약간의 무작위
-				if (d <= 3) return { depth: 1, topK: 0, noise: 0.10, playstyle: "random" };
-				if (d <= 6) return { depth: 2, topK: 0, noise: 0.05, playstyle: "heuristic" };
-				if (d <= 8) return { depth: 3, topK: 10, noise: 0.02, playstyle: "lookahead" };
-				if (d === 9) return { depth: 5, topK: 8, noise: 0.01, playstyle: "minimax" };
-				return { depth: 10, topK: 12, noise: 0.00, playstyle: "minimax" }; // 10
-			}
-
-            
-
-			// ==== 컴퓨터 수 ====
-			computerMove() {
-				if (this.gameEnded) return;
-
-				// 자살수를 제외한 유효 수만 후보로
-				const candidates = this.getValidMoves('computer', true);
-				if (candidates.length === 0) {
-					this.pass();
-					return;
-				}
-
-				const params = this.difficultyParams(this.difficulty);
-
-				// 1) 즉시 포획 승리 수(상대 돌 하나라도 제거되는 수) 있으면 최우선
-				const captureMoves = [];
-				for (let mv of candidates) {
-					const sim = this.simulateMove(this.board, mv, 'computer');
-					if (sim.valid && sim.captured > 0) captureMoves.push({ move: mv, cap: sim.captured });
-				}
-				if (captureMoves.length > 0) {
-					// 최대 포획 수 위주로, 동점이면 랜덤
-					const maxCap = Math.max(...captureMoves.map(m => m.cap));
-					const bestCaps = captureMoves.filter(m => m.cap === maxCap);
-					const chosen = bestCaps[Math.floor(Math.random() * bestCaps.length)].move;
-					this.makeMove(chosen, 'computer');
-					return;
-				}
-
-				let chosenMove;
-
-				// 2) 난이도별 의사결정
-				if (params.depth === 0 && params.playstyle === "random") {
-					// 쉬움: 랜덤 + 약간 중앙 선호
-					if (Math.random() < 0.7) {
-						chosenMove = candidates[Math.floor(Math.random() * candidates.length)];
-					} else {
-						const centers = this.getCenterMoves(candidates);
-						chosenMove = centers.length ? centers[Math.floor(Math.random() * centers.length)]
-													: candidates[Math.floor(Math.random() * candidates.length)];
-					}
-				} else if (params.depth === 0 && params.playstyle === "heuristic") {
-					// 중간: 연결성/중앙/공격 기회를 평가해서 상위 중 하나 선택
-					const scored = candidates.map(mv => {
-						const sim = this.simulateMove(this.board, mv, 'computer');
-						return { move: mv, score: this.evaluateBoard(sim.board) + this.evaluateMoveHeuristic(mv, 'computer') };
-					}).sort((a,b) => b.score - a.score);
-
-					// 상위 5개 중 하나 (약간 랜덤)
-					const bucket = scored.slice(0, Math.min(5, scored.length));
-					chosenMove = bucket[Math.floor(Math.random() * bucket.length)].move;
-
-				} else if (params.depth === 1) {
-					// 상위 후보 10개로 1수 앞보기(상대 최선 응수 고려)
-					const ordered = this.orderMovesByHeuristic(this.board, 'computer', candidates);
-					const top = ordered.slice(0, Math.min(params.topK, ordered.length));
-					let best = { move: top[0], score: -Infinity };
-
-					for (let mv of top) {
-						const sim = this.simulateMove(this.board, mv, 'computer');
-						if (!sim.valid) continue;
-						// 상대가 가장 좋게 응수했을 때 점수 (최악 가정)
-						const oppMoves = this.getValidMoves('player', true, sim.board);
-						let oppBest = Infinity;
-						if (oppMoves.length === 0) {
-							oppBest = -this.evaluateBoard(sim.board); // 상대가 못 두면 우리 유리
-						} else {
-							const oppOrdered = this.orderMovesByHeuristic(sim.board, 'player', oppMoves).slice(0, 8);
-							for (let omv of oppOrdered) {
-								const sim2 = this.simulateMove(sim.board, omv, 'player');
-								if (!sim2.valid) continue;
-								// 즉시 포획 당하는 라인 방지
-								let val = this.evaluateBoard(sim2.board);
-								if (sim2.captured > 0) val -= 50;
-								oppBest = Math.min(oppBest, val);
-							}
-						}
-						const myScore = -oppBest; // 상대 최선 응수 대비
-						// 소량 노이즈로 동점 반복 방지
-						const noise = (Math.random() - 0.5) * 2 * params.noise;
-						if (myScore + noise > best.score) best = { move: mv, score: myScore + noise };
-					}
-					chosenMove = best.move;
-
-				} else {
-					// 상위 후보만 두고 알파-베타 미니맥스 (깊이 2)
-					const ordered = this.orderMovesByHeuristic(this.board, 'computer', candidates);
-					const top = ordered.slice(0, Math.min(params.topK, ordered.length));
-					let best = { move: top[0], score: -Infinity };
-
-					let alpha = -Infinity, beta = Infinity;
-					for (let mv of top) {
-						const sim = this.simulateMove(this.board, mv, 'computer');
-						if (!sim.valid) continue;
-
-						// 즉시 포획은 앞에서 걸렀으므로 여기선 평가만
-						const val = this.alphabeta(sim.board, params.depth - 1, false, alpha, beta);
-						if (val > best.score) {
-							best = { move: mv, score: val };
-						}
-						alpha = Math.max(alpha, val);
-						if (beta <= alpha) break;
-					}
-					chosenMove = best.move;
-				}
-
-				this.makeMove(chosenMove, 'computer');
-			}
-
-
-			// ==== 알파-베타 탐색 ====
-			alphabeta(boardState, depth, maximizing, alpha, beta) {
-				if (depth === 0) return this.evaluateBoard(boardState);
-
-				const me = maximizing ? 'computer' : 'player';
-				const moves = this.getValidMoves(me, true, boardState);
-				if (moves.length === 0) return this.evaluateBoard(boardState);
-
-				const ordered = this.orderMovesByHeuristic(boardState, me, moves)
-					.slice(0, maximizing ? 10 : 10); // 수가 많을 때 가지치기
-
-				if (maximizing) {
-					let value = -Infinity;
-					for (let mv of ordered) {
-						const sim = this.simulateMove(boardState, mv, me);
-						if (!sim.valid) continue;
-						if (sim.captured > 0) return 9999; // 즉시 포획 승 = 거의 확정승
-						value = Math.max(value, this.alphabeta(sim.board, depth - 1, false, alpha, beta));
-						alpha = Math.max(alpha, value);
-						if (beta <= alpha) break;
-					}
-					return value;
-				} else {
-					let value = Infinity;
-					for (let mv of ordered) {
-						const sim = this.simulateMove(boardState, mv, me);
-						if (!sim.valid) continue;
-						if (sim.captured > 0) return -9999; // 상대가 즉시 포획 = 큰 위기
-						value = Math.min(value, this.alphabeta(sim.board, depth - 1, true, alpha, beta));
-						beta = Math.min(beta, value);
-						if (beta <= alpha) break;
-					}
-					return value;
-				}
-			}
-
-
-			// ==== 후보 정렬(가벼운 휴리스틱) ====
-			orderMovesByHeuristic(boardState, player, moves) {
-				const scored = [];
-				for (let mv of moves) {
-					const sim = this.simulateMove(boardState, mv, player);
-					if (!sim.valid) continue;
-					let s = this.evaluateBoard(sim.board);
-
-					// 가중 보너스: 중심, 연결, 상대 인접(공격 기회), 포획 직전(atari) 만들기
-					s += this.evaluateMoveHeuristic(mv, player, boardState) + sim.captured * 50;
-					scored.push({ mv, s });
-				}
-				scored.sort((a,b) => b.s - a.s);
-				return scored.map(o => o.mv);
-			}
-
-
-			// ==== 간단 휴리스틱(빠른 정렬용) ====
-			evaluateMoveHeuristic(move, player, boardState = this.board) {
-				const row = Math.floor(move / 9);
-				const col = move % 9;
-				let score = 0;
-
-				// 중심 선호 (가까울수록 +)
-				const centerDistance = Math.abs(row - 4) + Math.abs(col - 4);
-				score += (8 - centerDistance) * 0.6;
-
-				// 연결성 (인접 아군 수)
-				const neighbors = this.getNeighbors(move);
-				const friendlyNeighbors = neighbors.filter(n => boardState[n] === player).length;
-				score += friendlyNeighbors * 2.5;
-
-				// 공격 기회 (인접 적군 수)
-				const opponent = (player === 'player') ? 'computer' : 'player';
-				const enemyNeighbors = neighbors.filter(n => boardState[n] === opponent).length;
-				score += enemyNeighbors * 1.8;
-
-				// 자살 위험(시뮬) 페널티
-				const sim = this.simulateMove(boardState, move, player);
-				if (!sim.valid) score -= 100;
-
-				// Atari 유도(상대 그룹 한숨) 보너스
-				const atariDelta = this.countAtari(sim.board, opponent) - this.countAtari(boardState, opponent);
-				score += atariDelta * 3;
-
-				return score;
-			}
-
-
-
-			// --- 단순 점수 기반 선택 ---
-			pickBest(moves, player) {
-				let bestScore = -Infinity;
-				let bestMove = moves[0];
-				for (let move of moves) {
-					const score = this.evaluateMove(move, player);
-					if (score > bestScore) {
-						bestScore = score;
-						bestMove = move;
-					}
-				}
-				return bestMove;
-			}
-
-			// --- 미니맥스 기반 선택 ---
-			minimaxPick(validMoves, depth) {
-				let bestScore = -Infinity;
-				let bestMove = validMoves[0];
-
-				for (let move of validMoves) {
-					// 가상으로 수 두기
-					this.board[move] = 'computer';
-					const score = this.minimax(depth - 1, false);
-					this.board[move] = null;
-
-					if (score > bestScore) {
-						bestScore = score;
-						bestMove = move;
-					}
-				}
-				return bestMove;
-			}
-
-			minimax(depth, isMax) {
-				if (depth === 0) {
-					return this.evaluateBoard();
-				}
-
-				const validMoves = this.getValidMoves(isMax ? 'computer' : 'player');
-				if (validMoves.length === 0) return this.evaluateBoard();
-
-				let bestScore = isMax ? -Infinity : Infinity;
-
-				for (let move of validMoves) {
-					this.board[move] = isMax ? 'computer' : 'player';
-					const score = this.minimax(depth - 1, !isMax);
-					this.board[move] = null;
-
-					if (isMax) {
-						bestScore = Math.max(bestScore, score);
-					} else {
-						bestScore = Math.min(bestScore, score);
-					}
-				}
-				return bestScore;
-			}
-
-			// ==== 보드 평가(전반적 우세도) ====
-			evaluateBoard(boardState = this.board) {
-				// 1) 돌 개수 차
-				let my = 0, opp = 0;
-				for (let i = 0; i < 81; i++) {
-					if (boardState[i] === 'computer') my++;
-					else if (boardState[i] === 'player') opp++;
-				}
-				let score = (my - opp) * 2.0;
-
-				// 2) 그룹 자유 합(리버티) 차
-				const gInfo = this.collectGroups(boardState);
-				score += (gInfo.libComputer - gInfo.libPlayer) * 0.5;
-
-				// 3) 중심/연결성 영향
-				score += (gInfo.centerComputer - gInfo.centerPlayer) * 0.3;
-				score += (gInfo.connComputer - gInfo.connPlayer) * 0.5;
-
-				// 4) Atari(한숨 남은 그룹) 밸런스: 상대가 한숨인 그룹 많으면 +
-				score += (gInfo.atariPlayer - gInfo.atariComputer) * 3.0; // player가 곤란할수록 우리 유리
-
-				return score;
-			}
-
-			collectGroups(boardState) {
-				const visited = new Set();
-				const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
-				let libP=0, libC=0, ctrP=0, ctrC=0, connP=0, connC=0, atariP=0, atariC=0;
-
-				for (let i=0;i<81;i++){
-					const color = boardState[i];
-					if (color === null || visited.has(i)) continue;
-
-					const grp = this.getGroupFromBoard(boardState, i, color, visited);
-					const libs = this.getLibertiesFromBoard(boardState, grp);
-					const isAtari = (libs === 1);
-
-					// 중심/연결성 계산
-					let centerSum = 0, connSum = 0;
-					for (let idx of grp) {
-						const r = Math.floor(idx/9), c = idx%9;
-						centerSum += (8 - (Math.abs(r-4)+Math.abs(c-4)));
-						for (let [dr,dc] of dirs) {
-							const nr=r+dr,nc=c+dc;
-							if (nr<0||nr>=9||nc<0||nc>=9) continue;
-							const ni = nr*9+nc;
-							if (boardState[ni] === color) connSum++;
-						}
-					}
-
-					if (color === 'player') {
-						libP += libs;
-						ctrP += centerSum / grp.length;
-						connP += connSum;
-						if (isAtari) atariP++;
-					} else {
-						libC += libs;
-						ctrC += centerSum / grp.length;
-						connC += connSum;
-						if (isAtari) atariC++;
-					}
-				}
-				return {
-					libPlayer: libP, libComputer: libC,
-					centerPlayer: ctrP, centerComputer: ctrC,
-					connPlayer: connP, connComputer: connC,
-					atariPlayer: atariP, atariComputer: atariC
-				};
-			}
-
-
-			countAtari(boardState, color) {
-				const visited = new Set();
-				let cnt = 0;
-				for (let i=0;i<81;i++){
-					if (boardState[i] !== color || visited.has(i)) continue;
-					const grp = this.getGroupFromBoard(boardState, i, color, visited);
-					const libs = this.getLibertiesFromBoard(boardState, grp);
-					if (libs === 1) cnt++;
-				}
-				return cnt;
-			}
-
-
-			getGroupFromBoard(boardState, start, color, visited) {
-				const stack = [start];
-				const grp = [];
-				while (stack.length) {
-					const idx = stack.pop();
-					if (visited.has(idx)) continue;
-					visited.add(idx);
-					if (boardState[idx] !== color) continue;
-					grp.push(idx);
-					const neigh = this.getNeighbors(idx);
-					for (let n of neigh) {
-						if (!visited.has(n) && boardState[n] === color) stack.push(n);
-					}
-				}
-				return grp;
-			}
-
-			getLibertiesFromBoard(boardState, group) {
-				const seen = new Set();
-				let libs = 0;
-				for (let idx of group) {
-					const neigh = this.getNeighbors(idx);
-					for (let n of neigh) {
-						if (boardState[n] === null && !seen.has(n)) {
-							seen.add(n); libs++;
-						}
-					}
-				}
-				return libs;
-			}
-
-
-
-			// ==== 단일 수 시뮬레이션(포획/자살 판정 포함) ====
-			simulateMove(boardState, move, player) {
-				if (boardState[move] !== null) return { valid: false, board: boardState, captured: 0 };
-				const b = boardState.slice();
-				const opponent = (player === 'player') ? 'computer' : 'player';
-
-				// 1) 착수
-				b[move] = player;
-
-				// 2) 상대 그룹들 중 자유(빈칸)가 0인 것 제거 = 포획
-				let captured = 0;
-				const visited = new Set();
-				for (let i = 0; i < 81; i++) {
-					if (b[i] !== opponent || visited.has(i)) continue;
-					const grp = this.getGroupFromBoard(b, i, opponent, visited);
-					const libs = this.getLibertiesFromBoard(b, grp);
-					if (libs === 0) {
-						for (let idx of grp) { b[idx] = null; captured++; }
-					}
-				}
-
-				// 3) 내 돌이 자살인지 확인 (착수한 그룹의 자유가 0이면 무효)
-				const myVisited = new Set();
-				const myGroup = this.getGroupFromBoard(b, move, player, myVisited);
-				const myLibs = this.getLibertiesFromBoard(b, myGroup);
-				if (myLibs === 0) {
-					return { valid: false, board: boardState, captured: 0 };
-				}
-
-				return { valid: true, board: b, captured };
-			}
-
-
-            // ==== 유효 수 목록 (avoidSuicide=true면 자살수 제외). boardOverride로 임의 보드 평가 가능 ====
-			getValidMoves(player, avoidSuicide = false, boardOverride = null) {
-				const b = boardOverride || this.board;
-				const valid = [];
-				for (let i = 0; i < 81; i++) {
-					if (b[i] !== null) continue;
-					if (!avoidSuicide) {
-						valid.push(i);
-					} else {
-						const sim = this.simulateMove(b, i, player);
-						if (sim.valid) valid.push(i);
-					}
-				}
-				return valid;
-			}
-
-
-
-
+            computerMove() {
+                if (this.gameEnded || this.reviewMode) return;
+
+                const candidates = this.getValidMoves('computer');
+                if (candidates.length === 0) {
+                    this.pass();
+                    return;
+                }
+
+                // 즉시 포획 가능한 수 우선
+                for (let move of candidates) {
+                    const tempBoard = [...this.board];
+                    tempBoard[move] = 'computer';
+                    
+                    // 상대방 돌 포획 체크
+                    for (let i = 0; i < 81; i++) {
+                        if (tempBoard[i] === 'player') {
+                            const group = this.getGroupFromBoard(tempBoard, i);
+                            if (this.isGroupCaptured(tempBoard, group)) {
+                                this.makeMove(move, 'computer');
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                let chosenMove;
+
+                // 난이도별 AI 전략
+                if (this.difficulty <= 3) {
+                    // 쉬운 난이도: 랜덤 + 약간 중앙 선호
+                    if (Math.random() < 0.7) {
+                        chosenMove = candidates[Math.floor(Math.random() * candidates.length)];
+                    } else {
+                        const centers = this.getCenterMoves(candidates);
+                        chosenMove = centers.length ? centers[Math.floor(Math.random() * centers.length)]
+                                                    : candidates[Math.floor(Math.random() * candidates.length)];
+                    }
+                } else {
+                    // 고급 난이도: 최선의 수들 중에서 랜덤 선택
+                    const scoredMoves = this.evaluateAllMoves(candidates);
+                    
+                    // 최고 점수와 비슷한 수들 찾기
+                    const bestScore = scoredMoves[0].score;
+                    const threshold = this.difficulty >= 8 ? 0.5 : 1.0;
+                    const similarMoves = scoredMoves.filter(m => 
+                        Math.abs(m.score - bestScore) <= threshold
+                    );
+                    
+                    // 유사한 점수의 수들 중에서 랜덤 선택
+                    if (similarMoves.length > 1) {
+                        chosenMove = similarMoves[Math.floor(Math.random() * similarMoves.length)].move;
+                    } else {
+                        chosenMove = scoredMoves[0].move;
+                    }
+                }
+
+                this.makeMove(chosenMove, 'computer');
+            }
+
+            evaluateAllMoves(candidates) {
+                const scored = candidates.map(mv => {
+                    let score = this.evaluateMove(mv, 'computer');
+                    
+                    // 랜덤 노이즈 추가 (동점 상황 방지)
+                    score += (Math.random() - 0.5) * 0.2;
+                    
+                    return { move: mv, score: score };
+                });
+                
+                return scored.sort((a, b) => b.score - a.score);
+            }
+
+            getValidMoves(player) {
+                const moves = [];
+                for (let i = 0; i < 81; i++) {
+                    if (this.board[i] === null) {
+                        moves.push(i);
+                    }
+                }
+                return moves;
+            }
 
             getCenterMoves(moves) {
                 return moves.filter(move => {
                     const row = Math.floor(move / 9);
                     const col = move % 9;
                     return row >= 3 && row <= 5 && col >= 3 && col <= 5;
-                });
-            }
-
-            getConnectedMoves(moves, player) {
-                return moves.filter(move => {
-                    const neighbors = this.getNeighbors(move);
-                    return neighbors.some(neighbor => this.board[neighbor] === player);
                 });
             }
 
@@ -1099,11 +812,51 @@
                 return score;
             }
 
+            getGroupFromBoard(board, startIndex) {
+                if (board[startIndex] === null) return [];
+                
+                const color = board[startIndex];
+                const group = [];
+                const visited = new Set();
+                const stack = [startIndex];
+
+                while (stack.length > 0) {
+                    const index = stack.pop();
+                    if (visited.has(index)) continue;
+                    
+                    visited.add(index);
+                    if (board[index] === color) {
+                        group.push(index);
+                        
+                        const neighbors = this.getNeighbors(index);
+                        neighbors.forEach(neighbor => {
+                            if (!visited.has(neighbor) && board[neighbor] === color) {
+                                stack.push(neighbor);
+                            }
+                        });
+                    }
+                }
+
+                return group;
+            }
+
+            isGroupCaptured(board, group) {
+                for (let index of group) {
+                    const neighbors = this.getNeighbors(index);
+                    for (let neighbor of neighbors) {
+                        if (board[neighbor] === null) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
             pass() {
                 this.consecutivePasses++;
                 
                 if (this.consecutivePasses >= 2) {
-                    this.calculateScore(false);
+                    this.calculateScore(true);
                     return;
                 }
 
@@ -1111,7 +864,7 @@
             }
 
             switchPlayer() {
-                if (this.gameEnded) return;
+                if (this.gameEnded || this.reviewMode) return;
                 
                 this.currentPlayer = this.currentPlayer === 'player' ? 'computer' : 'player';
                 this.updateDisplay();
@@ -1121,88 +874,171 @@
                 }
             }
 
-            calculateScore(showModal = true) {
-                // 간단한 점수 계산: 보드 위의 돌 개수
-                let playerScore = 0;
-                let computerScore = 0;
-
-                for (let i = 0; i < 81; i++) {
-                    if (this.board[i] === 'player') {
-                        playerScore++;
-                    } else if (this.board[i] === 'computer') {
-                        computerScore++;
-                    }
-                }
-
-                // 선공(컴퓨터)이 3점 이상 앞서야 승리
-                let winner;
-                if (computerScore - playerScore >= 3) {
-                    winner = 'computer';
-                } else {
-                    winner = 'player';
-                }
-
-                if (showModal) {
-                    this.endGame(winner, '점수');
-                }
-
-                return { playerScore, computerScore, winner };
-            }
-
-            endGame(winner, reason) {
-                this.gameEnded = true;
-                const { playerScore, computerScore } = this.calculateScore(false);
-                
-                let title = winner === 'player' ? '🎉 승리!' : '😢 패배!';
-                let message = `최종 점수: 당신 ${playerScore}점, 컴퓨터 ${computerScore}점`;
-                
-                if (reason === '포획 승리') {
-                    message = `${winner === 'player' ? '당신이' : '컴퓨터가'} 상대방 돌을 포획하여 승리!`;
-                }
-
-                document.getElementById('gameOverTitle').textContent = title;
-                document.getElementById('gameOverMessage').textContent = message;
-                document.getElementById('gameOverModal').style.display = 'flex';
-            }
-
-            updateDisplay() {
-                // 보드 업데이트
-                for (let i = 0; i < 81; i++) {
-                    const element = document.querySelector(`[data-index="${i}"]`);
-                    if (element) {
-                        element.innerHTML = '';
-                        
-                        if (this.board[i] !== null) {
-                            const stone = document.createElement('div');
-                            stone.className = `stone ${this.board[i]}`;
-                            element.appendChild(stone);
-                        }
-                    }
-                }
-
-                // 정보 업데이트
-                document.getElementById('playerStones').textContent = this.playerStones;
-                document.getElementById('computerStones').textContent = this.computerStones;
-
-                const { playerScore, computerScore } = this.calculateScore(false);
-                document.getElementById('playerTerritory').textContent = playerScore;
-                document.getElementById('computerTerritory').textContent = computerScore;
-
-                // 상태 표시
-                if (!this.gameEnded) {
-                    const statusText = this.currentPlayer === 'player' ? 
-                        '당신의 차례입니다 (파란색 돌)' : 
-                        '컴퓨터가 생각 중입니다...';
-                    document.getElementById('gameStatus').textContent = statusText;
-                }
-
-                // 버튼 상태
-                const passBtn = document.getElementById('passBtn');
-                if (passBtn) {
-                    passBtn.disabled = this.currentPlayer !== 'player' || this.gameEnded;
-                }
-            }
-        }
+            calculateScore(showResult = true) {
+			    let playerScore = 0;
+			    let computerScore = 0;
+			
+			    for (let i = 0; i < 81; i++) {
+			        if (this.board[i] === 'player') {
+			            playerScore++;
+			        } else if (this.board[i] === 'computer') {
+			            computerScore++;
+			        }
+			    }
+			
+			    let winner;
+			    if (computerScore - playerScore >= 3) {
+			        winner = 'computer';
+			    } else {
+			        winner = 'player';
+			    }
+			
+			    if (showResult) {
+			        this.endGame(winner, '점수');
+			    }
+			
+			    return { playerScore, computerScore, winner };
+			}
+	
+			endGame(winner, reason) {
+			    this.gameEnded = true;
+			    const { playerScore, computerScore } = this.calculateScore(false);
+			    
+			    let title = winner === 'player' ? '승리!' : '패배!';
+			    let message = `최종 점수: 당신 ${playerScore}점, 컴퓨터 ${computerScore}점`;
+			    
+			    if (reason === '포획 승리') {
+			        message = `${winner === 'player' ? '당신이' : '컴퓨터가'} 상대방 돌을 포획하여 승리했습니다!`;
+			    }
+			
+			    this.showGameResult(title, message, winner);
+			}
+			
+			showGameResult(title, message, winner) {
+			    const resultElement = document.getElementById('gameResult');
+			    const titleElement = document.getElementById('resultTitle');
+			    const messageElement = document.getElementById('resultMessage');
+			    
+			    titleElement.textContent = title;
+			    titleElement.className = `result-title ${winner === 'player' ? 'win' : 'lose'}`;
+			    messageElement.textContent = message;
+			    
+			    this.createFinalBoard();
+			    resultElement.classList.add('show');
+			}
+			
+			createFinalBoard() {
+			    const finalBoard = document.getElementById('finalBoard');
+			    finalBoard.innerHTML = '';
+			
+			    for (let i = 0; i < 81; i++) {
+			        const intersection = document.createElement('div');
+			        intersection.className = 'intersection';
+			        
+			        if (this.board[i] !== null) {
+			            const stone = document.createElement('div');
+			            stone.className = `stone ${this.board[i]}`;
+			            intersection.appendChild(stone);
+			        }
+			        
+			        if (i === this.lastMove) {
+			            intersection.classList.add('last-move');
+			        }
+			        
+			        finalBoard.appendChild(intersection);
+			    }
+			}
+			
+			startReview() {
+			    this.reviewMode = true;
+			    this.reviewStep = 0;
+			    document.getElementById('gameResult').classList.remove('show');
+			    document.getElementById('gameStatus').textContent = '복기 모드 - 클릭하여 다음 수를 확인하세요';
+			    
+			    // 초기 상태로 보드 리셋
+			    this.board = Array(81).fill(null);
+			    this.lastMove = null;
+			    this.updateDisplay();
+			    this.showReviewStep();
+			}
+			
+			showReviewStep() {
+			    if (this.reviewStep < this.gameHistory.length) {
+			        const step = this.gameHistory[this.reviewStep];
+			        this.board = [...step.board];
+			        this.lastMove = step.move;
+			        this.updateDisplay();
+			        
+			        const playerName = step.player === 'player' ? '당신' : 
+			                         step.player === 'computer' ? '컴퓨터' : '중립';
+			        document.getElementById('gameStatus').textContent = 
+			            `${this.reviewStep + 1}/${this.gameHistory.length}: ${playerName}이 ${this.indexToCoord(step.move)}에 착수`;
+			        
+			        this.reviewStep++;
+			        
+			        // 자동으로 다음 수 보여주기
+			        setTimeout(() => {
+			            if (this.reviewMode && this.reviewStep < this.gameHistory.length) {
+			                this.showReviewStep();
+			            } else if (this.reviewMode) {
+			                document.getElementById('gameStatus').textContent = '복기 완료 - 새 게임을 시작하세요';
+			                this.reviewMode = false;
+			            }
+			        }, 1500);
+			    }
+			}
+		
+			indexToCoord(index) {
+			    const row = Math.floor(index / 9);
+			    const col = index % 9;
+			    const letters = 'ABCDEFGHI';
+			    return letters[col] + (row + 1);
+			}
+			
+			updateDisplay() {
+			    // 보드 업데이트
+			    for (let i = 0; i < 81; i++) {
+			        const element = document.querySelector(`[data-index="${i}"]`);
+			        if (element) {
+			            element.innerHTML = '';
+			            element.classList.remove('last-move');
+			            
+			            if (this.board[i] !== null) {
+			                const stone = document.createElement('div');
+			                stone.className = `stone ${this.board[i]}`;
+			                element.appendChild(stone);
+			            }
+			            
+			            // 마지막 착수 하이라이트
+			            if (i === this.lastMove && !this.reviewMode) {
+			                element.classList.add('last-move');
+			            }
+			        }
+			    }
+			
+			    // 정보 업데이트
+			    document.getElementById('playerStones').textContent = this.playerStones;
+			    document.getElementById('computerStones').textContent = this.computerStones;
+			
+			    const { playerScore, computerScore } = this.calculateScore(false);
+			    document.getElementById('playerTerritory').textContent = playerScore;
+			    document.getElementById('computerTerritory').textContent = computerScore;
+			
+			    // 상태 표시
+			    if (!this.gameEnded && !this.reviewMode) {
+			        const statusText = this.currentPlayer === 'player' ? 
+			            '당신의 차례입니다 (파란색 돌)' : 
+			            '컴퓨터가 생각 중입니다...';
+			        document.getElementById('gameStatus').textContent = statusText;
+			    }
+			
+			    // 버튼 상태
+			    const passBtn = document.getElementById('passBtn');
+			    if (passBtn) {
+			        passBtn.disabled = this.currentPlayer !== 'player' || this.gameEnded || this.reviewMode;
+			    }
+			}
+		}
     </script>
 </body>
 </html>
